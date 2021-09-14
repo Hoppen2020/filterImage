@@ -1,0 +1,94 @@
+package co.hoppen.filterlib.filter;
+
+import android.graphics.Bitmap;
+import android.graphics.Color;
+
+import com.blankj.utilcode.util.LogUtils;
+
+import java.util.Random;
+
+import co.hoppen.filterlib.FilterInfoResult;
+import co.hoppen.filterlib.FilterType;
+
+/**
+ * Created by YangJianHui on 2021/9/10.
+ */
+public class SkinOilSecretion extends Filter {
+
+
+    @Override
+    public FilterInfoResult onFilter() {
+        FilterInfoResult filterInfoResult = new FilterInfoResult();
+        try {
+            Bitmap originalImage = getOriginalImage();
+            if (!isEmptyBitmap(originalImage)){
+                int width = originalImage.getWidth();
+                int height = originalImage.getHeight();
+                int count = width * height;
+
+                int [] originalPixels = new int[count];
+                int [] filterPixels = new int[count];
+
+                originalImage.getPixels(originalPixels,0,width,0,0,width,height);
+                int totalGray = 0;
+                for (int i = 0; i <originalPixels.length ; i++) {
+                    int originalPixel = originalPixels[i];
+                    int R = Color.red(originalPixel);
+                    int G = Color.green(originalPixel);
+                    int B = Color.blue(originalPixel);
+                    int gray = (int) (R * 0.3 + G * 0.59 + B * 0.11);
+                    totalGray+=gray;
+                    filterPixels[i] = gray;
+                }
+                int avgGray = totalGray / count;
+                double totalCountPixels = 0;
+                double totalWaterPixels = 0;
+                double totalPercentPixels = 0;
+                double hash = 0;
+                for (int i = 0; i <originalPixels.length ; i++) {
+                    int gray = filterPixels[i];
+                    filterPixels[i] = originalPixels[i];
+                    if (gray >= avgGray * 1.2 && gray <= 250) {
+                        totalCountPixels++;
+                    }
+                    if (gray >= avgGray * 1.2 && gray > 250) {
+                        totalWaterPixels++;
+                    }
+
+                    if (gray <avgGray * 1.2){
+
+                    } else if (gray>90&&gray<=110){
+
+                    }else if (gray>100){
+                        totalPercentPixels++;
+                        filterPixels[i]=Color.rgb(255, 255, 0);
+                    }
+                }
+                totalCountPixels = totalWaterPixels * 60 + totalCountPixels * 2;
+                hash = totalCountPixels / count;
+                LogUtils.e(totalCountPixels,hash);
+                int score = 0;
+                score = (int) (40 + (1-hash) * 40);
+
+                if (score > 80) {
+                    score = 78+new Random().nextInt(3);
+                }
+                if (score<40){
+                    score =38+new Random().nextInt(3);;
+                }
+
+                Bitmap bitmap = Bitmap.createBitmap(width, height,Bitmap.Config.ARGB_8888);
+                bitmap.setPixels(filterPixels,0,width, 0, 0, width, height);
+                filterInfoResult.setResistance(getResistance());
+                filterInfoResult.setScore(score);
+                filterInfoResult.setRatio((totalPercentPixels * 100 / count));
+                filterInfoResult.setFilterBitmap(bitmap);
+                filterInfoResult.setType(FilterType.SKIN_OIL_SECRETION);
+                filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);
+            }else filterInfoResult.setStatus(FilterInfoResult.Status.FAILURE);
+        }catch (Exception e){
+            filterInfoResult.setStatus(FilterInfoResult.Status.FAILURE);
+        }
+        return filterInfoResult;
+    }
+}
