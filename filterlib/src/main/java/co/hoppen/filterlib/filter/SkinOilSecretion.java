@@ -48,16 +48,16 @@ public class SkinOilSecretion extends Filter {
                 for (int i = 0; i <originalPixels.length ; i++) {
                     int gray = filterPixels[i];
                     filterPixels[i] = originalPixels[i];
-                    if (gray >= avgGray * 1.2 && gray <= 250) {
+                    if (gray >= avgGray * 1.1 && gray <= 250) {
                         totalCountPixels++;
                     }
-                    if (gray >= avgGray * 1.2 && gray > 250) {
+                    if (gray >= avgGray * 1.1 && gray > 250) {
                         totalWaterPixels++;
                     }
 
                     if (gray <avgGray * 1.2){
 
-                    } else if (gray>90&&gray<=110){
+                    }else if (gray>90&&gray<=110){
 
                     }else if (gray>100){
                         totalPercentPixels++;
@@ -66,15 +66,21 @@ public class SkinOilSecretion extends Filter {
                 }
                 totalCountPixels = totalWaterPixels * 60 + totalCountPixels * 2;
                 hash = totalCountPixels / count;
-                LogUtils.e(totalCountPixels,hash);
+                LogUtils.e(totalCountPixels,hash, totalPercentPixels,totalPercentPixels / count);
                 int score = 0;
-                score = (int) (40 + (1-hash) * 40);
+                score = (int) ((30)+ ((1-hash)*0.9) * 40);
+                LogUtils.e(score);
 
-                if (score > 80) {
-                    score = 78+new Random().nextInt(3);
+                if (score<=50&&score>55){
+                    score = (score-40) * 21 / 10 +40;
+                }else if (score<=55){
+                    score = (score-40) * 3 +25;
                 }
-                if (score<40){
-                    score =38+new Random().nextInt(3);;
+                if (score > 80) {
+                    score = 78;
+                }
+                if (score<35){
+                    score =35;
                 }
 
                 Bitmap bitmap = Bitmap.createBitmap(width, height,Bitmap.Config.ARGB_8888);
@@ -82,6 +88,7 @@ public class SkinOilSecretion extends Filter {
                 filterInfoResult.setResistance(getResistance());
                 filterInfoResult.setScore(score);
                 filterInfoResult.setRatio((totalPercentPixels * 100 / count));
+                filterInfoResult.setDepth(0);
                 filterInfoResult.setFilterBitmap(bitmap);
                 filterInfoResult.setType(FilterType.SKIN_OIL_SECRETION);
                 filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);

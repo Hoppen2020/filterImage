@@ -35,8 +35,10 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
+
     api 'com.blankj:utilcodex:1.30.6'
     api 'io.reactivex.rxjava3:rxjava:3.1.1'
     api 'io.reactivex.rxjava3:rxandroid:3.0.0'
+
 
 }

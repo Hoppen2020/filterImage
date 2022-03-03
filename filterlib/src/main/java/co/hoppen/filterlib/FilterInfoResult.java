@@ -19,6 +19,8 @@ public class FilterInfoResult {
 
     private double ratio;
 
+    private float depth;
+
     private Status status = Status.NOT_CONVERTED;
 
     public Bitmap getFilterBitmap() {
@@ -72,6 +74,14 @@ public class FilterInfoResult {
 
     public void setType(FilterType type) {
         this.type = type;
+    }
+
+    public void setDepth(float depth) {
+        this.depth = depth;
+    }
+
+    public float getDepth() {
+        return depth;
     }
 
     @Override

@@ -67,5 +67,42 @@ public abstract class Filter {
         return h;
     }
 
+    public Bitmap hairRemoval(){
+
+        return null;
+    }
+
+    protected Bitmap toGray(boolean dark){
+        if (originalImage==null)return null;
+        int width = originalImage.getWidth();
+        int height = originalImage.getHeight();
+        int count = width * height;
+        int [] originalPixels = new int[count];
+        int [] filterPixels = new int[count];
+        originalImage.getPixels(originalPixels,0,width,0,0,width,height);
+
+        for (int i = 0; i <originalPixels.length ; i++) {
+            int originalPixel = originalPixels[i];
+            int R = Color.red(originalPixel);
+            int G = Color.green(originalPixel);
+            int B = Color.blue(originalPixel);
+            int gray = (int) (R * 0.3 + G * 0.59 + B * 0.11);
+            int rgb = Color.rgb(gray, gray, gray);
+            int color = (int) (rgb + (rgb-128) * (1.0f+0f) /255);
+            filterPixels[i] = dark?color:rgb;
+        }
+        Bitmap bitmap = Bitmap.createBitmap(width, height,Bitmap.Config.ARGB_8888);
+        bitmap.setPixels(filterPixels,0,width, 0, 0, width, height);
+        return bitmap;
+    }
+
+    public int oppositeColorValue(int value){
+        int opposite = 255 - value;
+        if(opposite>64 && opposite<128)
+            opposite-=64;
+        else if(opposite>=128 && opposite<192)
+            opposite+=64;
+        return opposite;
+    }
 
 }

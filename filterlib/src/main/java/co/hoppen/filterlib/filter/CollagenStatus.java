@@ -1,10 +1,7 @@
 package co.hoppen.filterlib.filter;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import co.hoppen.filterlib.FilterInfoResult;
@@ -13,7 +10,7 @@ import co.hoppen.filterlib.FilterType;
 /**
  * Created by YangJianHui on 2021/9/11.
  */
-public class CollagenFibersStatus extends Filter{
+public class CollagenStatus extends Filter{
     @Override
     public FilterInfoResult onFilter() {
         FilterInfoResult filterInfoResult = new FilterInfoResult();
@@ -46,7 +43,7 @@ public class CollagenFibersStatus extends Filter{
                 filterInfoResult.setScore(score);
                 filterInfoResult.setRatio(0);
                 filterInfoResult.setFilterBitmap(bitmap);
-                filterInfoResult.setType(FilterType.COLLAGEN_FIBERS_STATUS);
+                filterInfoResult.setType(FilterType.COLLAGEN_STATUS);
                 filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);
             }else filterInfoResult.setStatus(FilterInfoResult.Status.FAILURE);
         }catch (Exception e){

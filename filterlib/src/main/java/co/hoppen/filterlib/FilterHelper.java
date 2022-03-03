@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 
 import java.lang.reflect.Constructor;
 
-import co.hoppen.filterlib.filter.CollagenFibersStatus;
+import co.hoppen.filterlib.filter.CollagenStatus;
 import co.hoppen.filterlib.filter.ElasticFiberStatus;
 import co.hoppen.filterlib.filter.Filter;
 import co.hoppen.filterlib.filter.FollicleCleanDegree;
@@ -29,13 +29,32 @@ public class FilterHelper {
     }
 
     public void execute(FilterType type, Bitmap bitmap , float resistance)throws Exception{
-        Filter filter = createFilter(type, bitmap, resistance);
-        if (filter!=null){
-            Observable.just(filter.onFilter())
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(filterInfoResult -> onFilterListener.OnFilter(filterInfoResult));
-        }
+//        Observable.just(createFilter(type, bitmap, resistance).onFilter())
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(filterInfoResult -> onFilterListener.OnFilter(filterInfoResult));
+
+        new Thread(){
+            @Override
+            public void run() {
+                try {
+                    Filter filter = createFilter(type, bitmap, resistance);
+                    FilterInfoResult filterInfoResult = filter.onFilter();
+
+                    Observable.just(filterInfoResult).subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Consumer<FilterInfoResult>() {
+                                @Override
+                                public void accept(FilterInfoResult filterInfoResult) throws Throwable {
+                                    onFilterListener.OnFilter(filterInfoResult);
+                                }
+                            });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     private <F extends Filter> F createFilter(FilterType type, Bitmap bitmap , float resistance)throws Exception{
@@ -60,8 +79,8 @@ public class FilterHelper {
             case ELASTIC_FIBER_STATUS:
                 filterClass = ElasticFiberStatus.class;
                 break;
-            case COLLAGEN_FIBERS_STATUS:
-                filterClass = CollagenFibersStatus.class;
+            case COLLAGEN_STATUS:
+                filterClass = CollagenStatus.class;
                 break;
             case TEST:
                 filterClass = TestFilter.class;

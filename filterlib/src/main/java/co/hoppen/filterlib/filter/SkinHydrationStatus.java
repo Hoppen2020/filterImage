@@ -104,7 +104,7 @@ public class SkinHydrationStatus extends Filter {
                         score = 78+new Random().nextInt(3);
                     }
                     if (score<40){
-                        score =38+new Random().nextInt(3);;
+                        score =38+new Random().nextInt(3);
                     }
                 }
 
@@ -113,6 +113,7 @@ public class SkinHydrationStatus extends Filter {
                 filterInfoResult.setResistance(getResistance());
                 filterInfoResult.setScore(score);
                 filterInfoResult.setRatio((totalPercentPixels * 100 / count));
+                filterInfoResult.setDepth(0);
                 filterInfoResult.setFilterBitmap(bitmap);
                 filterInfoResult.setType(FilterType.SKIN_HYDRATION_STATUS);
                 filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);

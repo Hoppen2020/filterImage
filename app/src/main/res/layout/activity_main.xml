@@ -4,16 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:focusable="true"
+    >
 
     <FrameLayout
         android:id="@+id/frameLayout"
         android:layout_width="640dp"
         android:layout_height="480dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="100dp"
+        >
 
         <co.hoppen.cameralib.widget.UVCCameraTextureView
             android:id="@+id/uvc_camera"
@@ -21,30 +24,29 @@
             android:layout_height="match_parent" />
 
         <ImageView
+            android:onClick="show"
             android:id="@+id/iv_filter"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="fitXY" />
 
-
-
     </FrameLayout>
 
     <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="@+id/frameLayout"
-        app:layout_constraintStart_toStartOf="@+id/frameLayout"
-        app:layout_constraintTop_toBottomOf="@+id/frameLayout">
+        app:layout_constraintStart_toEndOf="@+id/linearLayout2"
+        app:layout_constraintTop_toTopOf="@+id/linearLayout2">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="电阻："
             android:textColor="@color/black"
-            android:textSize="50sp" />
+            android:textSize="30sp" />
 
         <TextView
             android:id="@+id/tv_res"
@@ -52,155 +54,375 @@
             android:layout_height="wrap_content"
             android:text="0"
             android:textColor="@color/black"
-            android:textSize="50sp" />
+            android:textSize="30sp" />
+
+
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/linearLayout4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="@+id/linearLayout"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="滤镜占比："
+            android:textColor="@color/black"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/tv_percentage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textColor="@color/black"
+            android:textSize="30sp" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="@+id/linearLayout4"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout4"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="平均滤镜颜色深浅："
+            android:textColor="@color/black"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/tv_depth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textColor="@color/black"
+            android:textSize="30sp" />
+
+
+    </LinearLayout>
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/appCompatTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="深浅值范围（0~255）越小约深"
+        android:textColor="#333333"
+        android:textSize="18sp"
+        android:textStyle="italic"
+        app:layout_constraintStart_toStartOf="@+id/linearLayout3"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/et_score"
+        android:layout_width="160dp"
+        android:layout_height="50dp"
+        android:inputType="number"
+        android:layout_marginTop="20dp"
+        android:maxLength="3"
+        android:textColor="@color/black"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="@+id/linearLayout3"
+        app:layout_constraintTop_toBottomOf="@+id/appCompatTextView" />
 
     <TextView
         android:id="@+id/tv_score"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:gravity="center"
-        android:paddingStart="5dp"
-        android:paddingTop="3dp"
-        android:paddingEnd="5dp"
-        android:paddingBottom="3dp"
-        android:text="0"
         android:textColor="@color/black"
-        android:textSize="70sp"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@+id/et_score"
+        app:layout_constraintTop_toTopOf="@+id/et_score"
+        app:layout_constraintStart_toEndOf="@id/et_score"
+        android:layout_marginStart="10dp"
+        />
+
+
+
+<!--    <TextView-->
+<!--        android:visibility="gone"-->
+<!--        android:id="@+id/tv_score"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_margin="5dp"-->
+<!--        android:gravity="center"-->
+<!--        android:paddingStart="5dp"-->
+<!--        android:paddingTop="3dp"-->
+<!--        android:paddingEnd="5dp"-->
+<!--        android:paddingBottom="3dp"-->
+<!--        android:text="0"-->
+<!--        android:textColor="@color/black"-->
+<!--        android:textSize="70sp"-->
+<!--        app:layout_constraintBottom_toBottomOf="@+id/frameLayout"-->
+<!--        app:layout_constraintEnd_toStartOf="@+id/frameLayout"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/frameLayout"-->
+<!--        />-->
+
+    <SeekBar
+        android:id="@+id/sb_gray"
+        android:layout_width="640dp"
+        android:layout_height="50dp"
+        android:max="255"
+        android:progress="160"
+        app:layout_constraintBottom_toTopOf="@+id/tv_auto"
+        app:layout_constraintEnd_toEndOf="@+id/sb_seek"
+        app:layout_constraintStart_toStartOf="@+id/sb_seek"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="红血丝调值"
+        android:textColor="#ff0000"
+        android:textStyle="italic"
+        android:textSize="25sp"
+        app:layout_constraintBottom_toBottomOf="@+id/sb_gray"
+        app:layout_constraintStart_toEndOf="@+id/sb_gray"
+        app:layout_constraintTop_toTopOf="@+id/sb_gray" />
+
+
+    <TextView
+        android:id="@+id/tv_gray"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:includeFontPadding="false"
+        android:text="190"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/sb_gray"
+        app:layout_constraintEnd_toStartOf="@+id/sb_gray"
+        app:layout_constraintTop_toTopOf="@id/sb_gray"
+        />
+
+    <TextView
+        android:id="@+id/tv_auto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:includeFontPadding="false"
+        android:text="210"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        app:layout_constraintTop_toTopOf="@id/sb_seek"
+        app:layout_constraintBottom_toBottomOf="@id/sb_seek"
+        app:layout_constraintEnd_toStartOf="@id/sb_seek"
+        android:layout_marginEnd="20dp"
+        />
+
+    <SeekBar
+        android:id="@+id/sb_seek"
+        android:layout_width="640dp"
+        android:layout_height="50dp"
+        android:max="255"
+        android:progress="30"
         app:layout_constraintBottom_toTopOf="@+id/frameLayout"
         app:layout_constraintEnd_toEndOf="@+id/frameLayout"
-        app:layout_constraintStart_toStartOf="@+id/frameLayout" />
+        />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="色素调值"
+        android:textColor="#FFD300"
+        android:textSize="25sp"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toTopOf="@+id/frameLayout"
+        app:layout_constraintStart_toEndOf="@+id/sb_seek"
+        app:layout_constraintTop_toTopOf="@+id/sb_seek" />
 
 
     <LinearLayout
-        android:layout_marginStart="10dp"
+        android:id="@+id/linearLayout2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="@+id/frameLayout"
         app:layout_constraintStart_toEndOf="@+id/frameLayout"
-        app:layout_constraintTop_toTopOf="@+id/frameLayout"
-        >
+        app:layout_constraintTop_toTopOf="@+id/frameLayout">
 
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:gravity="center"
+            android:onClick="saveFilter"
+            android:paddingStart="5dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="3dp"
+            android:text="保存滤镜图"
+            android:textColor="@color/black"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:gravity="center"
+            android:onClick="save"
+            android:paddingStart="5dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="3dp"
+            android:text="保存原图"
+            android:textColor="@color/black"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:gravity="center"
             android:onClick="toShui"
-            android:layout_margin="5dp"
-            android:gravity="center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:textColor="@color/black"
+            android:paddingStart="5dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="3dp"
             android:text="水份状态"
-            android:paddingStart="5dp"
-            android:paddingEnd="5dp"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
-            />
+            android:textColor="@color/black"
+            android:textSize="20sp" />
+
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:gravity="center"
             android:onClick="toYou"
-            android:layout_margin="5dp"
-            android:gravity="center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:textColor="@color/black"
+            android:paddingStart="5dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="3dp"
             android:text="油脂分泌"
-            android:paddingStart="5dp"
-            android:paddingEnd="5dp"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
-            />
+            android:textColor="@color/black"
+            android:textSize="20sp" />
+
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:gravity="center"
             android:onClick="toSe"
-            android:layout_margin="5dp"
-            android:gravity="center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:textColor="@color/black"
+            android:paddingStart="5dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="3dp"
             android:text="色素状态"
-            android:paddingStart="5dp"
-            android:paddingEnd="5dp"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
-            />
+            android:textColor="@color/black"
+            android:textSize="20sp" />
+
         <TextView
-            android:onClick="toHong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:gravity="center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:textColor="@color/black"
+            android:onClick="toHong"
+            android:paddingStart="5dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="3dp"
             android:text="红血丝状态"
-            android:paddingStart="5dp"
-            android:paddingEnd="5dp"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
-            />
+            android:textColor="@color/black"
+            android:textSize="20sp" />
+
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:gravity="center"
             android:onClick="toMao"
-            android:layout_margin="10dp"
-            android:gravity="center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:textColor="@color/black"
+            android:paddingStart="5dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="3dp"
             android:text="毛囊清洁"
-            android:paddingStart="5dp"
-            android:paddingEnd="5dp"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
-            />
+            android:textColor="@color/black"
+            android:textSize="20sp" />
+
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:gravity="center"
             android:onClick="toTan"
-            android:layout_margin="10dp"
-            android:gravity="center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:textColor="@color/black"
+            android:paddingStart="5dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="3dp"
             android:text="弹性纤维"
-            android:paddingStart="5dp"
-            android:paddingEnd="5dp"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
-            />
+            android:textColor="@color/black"
+            android:textSize="20sp" />
+
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:gravity="center"
             android:onClick="toJiao"
-            android:layout_margin="10dp"
-            android:gravity="center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:textColor="@color/black"
-            android:text="胶原纤维"
             android:paddingStart="5dp"
-            android:paddingEnd="5dp"
             android:paddingTop="3dp"
+            android:paddingEnd="5dp"
             android:paddingBottom="3dp"
-            />
+            android:text="胶原蛋白"
+            android:textColor="@color/black"
+            android:textSize="20sp" />
+
         <TextView
-            android:onClick="test"
-            android:layout_margin="10dp"
-            android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:textColor="@color/black"
-            android:text="test"
+            android:layout_margin="10dp"
+            android:gravity="center"
+            android:onClick="es"
             android:paddingStart="5dp"
-            android:paddingEnd="5dp"
             android:paddingTop="3dp"
+            android:paddingEnd="5dp"
             android:paddingBottom="3dp"
-            />
+            android:text="es file manager"
+            android:textColor="@color/black"
+            android:textSize="20sp" />
 
 
     </LinearLayout>
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#33000000"
+        android:id="@+id/fl_loading"
+        android:visibility="gone"
+        >
+        <FrameLayout
+            android:layout_width="162dp"
+            android:layout_height="162dp"
+            android:layout_gravity="center"
+            >
 
+            <ProgressBar
+                style="@style/loading_out_progressbar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <ProgressBar
+                style="@style/loading_int_progressbar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
+
+
+    </FrameLayout>
 
 
 

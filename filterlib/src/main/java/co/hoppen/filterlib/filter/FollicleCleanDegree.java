@@ -3,6 +3,8 @@ package co.hoppen.filterlib.filter;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
+import androidx.core.graphics.ColorUtils;
+
 import com.blankj.utilcode.util.LogUtils;
 
 import co.hoppen.filterlib.FilterInfoResult;
@@ -24,62 +26,45 @@ public class FollicleCleanDegree extends Filter{
                 int [] originalPixels = new int[count];
                 int [] filterPixels = new int[count];
                 originalImage.getPixels(originalPixels,0,width,0,0,width,height);
-                int totalReds = 0;
-                double totalHsv = 0;
-                int countRgb = 0;
-                for (int i = 0; i <originalPixels.length ; i++) {
-                    int originalPixel = originalPixels[i];
-                    int r = Color.red(originalPixel);
-                    totalReds+=r;
-                    filterPixels[i] = r;
-                }
-                int verGray=(int) (totalReds/filterPixels.length);
+
+//                ContrastAdjust contrastAdjust = new ContrastAdjust();
+//                int[] execute = contrastAdjust.execute(originalPixels, 50);
+
+                double totalPercentPixels = 0;
+                double totalDepth = 0;
 
                 for (int i = 0; i <originalPixels.length ; i++) {
-                    int originalPixel = originalPixels[i];
-                    filterPixels[i] = originalPixel;
-
-                    int r = Color.red(originalPixel);
-                    int g = Color.green(originalPixel);
-                    int b = Color.blue(originalPixel);
-
-                    double ratioRed = 1.0;
-
-                    if (r >= 40 && r <= 80)
-                        ratioRed = 3.0 - (r - 40) / 20;
-                    else if (r < 40) {
-                        ratioRed = 2.5 + (40 - r) / 40;
-                    } else {
-                        ratioRed = 1.4;
-                    }
-
-                    float float_R = (float) (r) / 765;
-                    float float_G = (float) (g) / 765;
-                    float float_B = (float) (b) / 765;
-
-                    if ((float_R / float_G > ratioRed || (float_R / float_B > ratioRed)) && r > verGray * 1.1) {
-                        if (!((float_B > 150 || float_G > 150) && Math.abs(float_B - float_G) <= 10)) {
-                            filterPixels[i] = Color.rgb(255, (int) float_G, (int) float_B);
-                            countRgb++;
-                        }
-                    }
-                }
-                int score = 0;
-                if (countRgb < (float)count / 50d) {
-                    score = (int) (65 + 25 * (1.0 - (countRgb * 50) / (count)));
-                } else if (countRgb >= count / 50d && countRgb < count /25.0) {
-                    score = (int) (50 + 15 * (1.0 - (countRgb - 640*480 / 50) * 50 / (count)));
-                } else if (countRgb >= count / 25d && countRgb < count *2.0 /20.0) {
-                    score = (int) (35 + 15 * (1.0 - (countRgb - 640*480 / 25.0) * 100.0 / 6.0 / (count)));
-                } else if (countRgb >= count *2.0d /20d){
-                    score = (int) (20 + 15 * (1.0 - (countRgb - 640*480 * 2.0 / 20.0) * 20.0 / 18.0 / (count)));
+                    int color = originalPixels[i];
+                    float [] hsl = new float[3];
+                    ColorUtils.colorToHSL(color,hsl);
+                    if (hsl[0]<=60 || hsl[0]>=335){
+                        //hsl[1] = hsl[1] * 0.3f + hsl[1];
+                        //filterPixels[i] = ColorUtils.HSLToColor(hsl);
+                        int R = oppositeColorValue(Color.red(color));
+                        int G = oppositeColorValue(Color.green(color));
+                        int B = oppositeColorValue(Color.blue(color));
+//                        int R = Color.red(color);
+//                        int G = Color.green(color);
+//                        int B = Color.blue(color);
+//                        hsl[1] = hsl[1] * 0.9f + hsl[1];
+//                        if (hsl[1]>=1f)hsl[1] = 1;
+                        if ( hsl[2]>=0.48f ){//0.45
+                            int filterColor = Color.rgb(R,G,B);
+                            filterPixels[i] = filterColor;
+                            totalPercentPixels++;
+                            totalDepth += (Color.red(filterColor) * 0.3 + Color.green(filterColor) * 0.59 + Color.blue(filterColor) * 0.11);
+                        }else filterPixels[i] = color;
+                    }else filterPixels[i] = color;
                 }
 
                 Bitmap bitmap = Bitmap.createBitmap(width, height,Bitmap.Config.ARGB_8888);
                 bitmap.setPixels(filterPixels,0,width, 0, 0, width, height);
                 filterInfoResult.setResistance(getResistance());
-                filterInfoResult.setScore(score);
-                filterInfoResult.setRatio((countRgb * 100 / count));
+                filterInfoResult.setScore(100);
+                filterInfoResult.setRatio(totalPercentPixels * 100 /count);
+                if (totalDepth!=0){
+                    filterInfoResult.setDepth((float) (totalDepth / totalPercentPixels));
+                }
                 filterInfoResult.setFilterBitmap(bitmap);
                 filterInfoResult.setType(FilterType.FOLLICLE_CLEAN_DEGREE);
                 filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);
