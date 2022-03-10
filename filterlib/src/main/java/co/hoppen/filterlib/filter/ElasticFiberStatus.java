@@ -3,8 +3,11 @@ package co.hoppen.filterlib.filter;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
+import com.blankj.utilcode.util.LanguageUtils;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 import co.hoppen.filterlib.FilterInfoResult;

@@ -10,3 +10,5 @@ dependencyResolutionManagement {
 rootProject.name = "filterImage"
 include ':app'
 include ':filterlib'
+
+include ':openCVLibrary343'

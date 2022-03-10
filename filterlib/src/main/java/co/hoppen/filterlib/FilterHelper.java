@@ -2,10 +2,18 @@ package co.hoppen.filterlib;
 
 import android.graphics.Bitmap;
 
+import com.blankj.utilcode.util.LogUtils;
+
+import org.opencv.android.OpenCVLoader;
+
 import java.lang.reflect.Constructor;
 
 import co.hoppen.filterlib.filter.CollagenStatus;
 import co.hoppen.filterlib.filter.ElasticFiberStatus;
+import co.hoppen.filterlib.filter.FaceHydrationStatus;
+import co.hoppen.filterlib.filter.FaceOilSecretion;
+import co.hoppen.filterlib.filter.FaceSkinEpidermisSpots;
+import co.hoppen.filterlib.filter.FaceSkinWrinkle;
 import co.hoppen.filterlib.filter.Filter;
 import co.hoppen.filterlib.filter.FollicleCleanDegree;
 import co.hoppen.filterlib.filter.SkinHydrationStatus;
@@ -26,6 +34,12 @@ public class FilterHelper {
 
     public FilterHelper(OnFilterListener onFilterListener){
         this.onFilterListener = onFilterListener;
+        if (!OpenCVLoader.initDebug()) {
+            LogUtils.e("Internal OpenCV library not found. Using OpenCV Manager for initialization");
+        } else {
+            LogUtils.e("OpenCV library found inside package. Using it!");
+        }
+
     }
 
     public void execute(FilterType type, Bitmap bitmap , float resistance)throws Exception{
@@ -84,6 +98,18 @@ public class FilterHelper {
                 break;
             case TEST:
                 filterClass = TestFilter.class;
+                break;
+            case FACE_HYDRATION_STATUS:
+                filterClass = FaceHydrationStatus.class;
+                break;
+            case FACE_OIL_SECRETION:
+                filterClass = FaceOilSecretion.class;
+                break;
+            case FACE_SKIN_EPIDERMIS_SPOTS:
+                filterClass = FaceSkinEpidermisSpots.class;
+                break;
+            case FACE_SKIN_WRINKLE:
+                filterClass = FaceSkinWrinkle.class;
                 break;
         }
         if (filterClass!=null){
