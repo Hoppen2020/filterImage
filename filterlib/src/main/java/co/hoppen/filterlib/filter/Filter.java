@@ -4,6 +4,15 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.Log;
 
+import com.blankj.utilcode.util.LogUtils;
+
+import org.opencv.android.Utils;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,6 +112,61 @@ public abstract class Filter {
         else if(opposite>=128 && opposite<192)
             opposite+=64;
         return opposite;
+    }
+
+    public Bitmap getFaceSkin(){
+        if (originalImage!=null){
+            Bitmap bitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
+
+            Mat yuvMat = new Mat();
+            Utils.bitmapToMat(bitmap,yuvMat);
+            Imgproc.cvtColor(yuvMat,yuvMat,Imgproc.COLOR_BGR2YCrCb);
+
+            Mat detect = new Mat();
+            List<Mat> channels = new ArrayList<>();
+            Core.split(yuvMat,channels);
+            LogUtils.e(channels.size());
+            Mat outputMark = channels.get(1);
+            Imgproc.threshold(outputMark,outputMark,0,255, Imgproc.THRESH_BINARY|Imgproc.THRESH_OTSU);
+            yuvMat.copyTo(detect,outputMark);
+
+            Mat strElement = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE,
+                    new Size(8, 8), new Point(-1, -1));
+
+            Imgproc.dilate(detect,detect,strElement);
+
+            Utils.matToBitmap(detect,bitmap);
+
+            for (Mat mat : channels){
+                mat.release();
+            }
+            yuvMat.release();
+            detect.release();
+            outputMark.release();
+            strElement.release();
+
+            int width = originalImage.getWidth();
+            int height = originalImage.getHeight();
+
+            int []filterPixels = new int[width*height];
+            int [] originalPixels = new int[width * height];
+
+            int [] dst = new int[width * height];
+
+            //过滤后皮肤
+            bitmap.getPixels(filterPixels, 0, width, 0, 0, width, height);
+            originalImage.getPixels(originalPixels, 0, width, 0, 0, width, height);
+
+            for (int i = 0; i < filterPixels.length; i++) {
+                int r = Color.red(filterPixels[i]);
+                int g = Color.green(filterPixels[i]);
+                int b = Color.blue(filterPixels[i]);
+                if (Color.rgb(r,g,b)==Color.BLACK){
+                    dst[i] = originalPixels[i];
+                }
+            }
+            return Bitmap.createBitmap(dst,width,height, Bitmap.Config.ARGB_8888);
+        }return null;
     }
 
 }
