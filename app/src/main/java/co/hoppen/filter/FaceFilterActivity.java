@@ -27,12 +27,10 @@ public class FaceFilterActivity extends AppCompatActivity implements OnFilterLis
       setContentView(R.layout.activity_filter);
       filterHelper = new FilterHelper(this);
       initView();
-      Bitmap bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath() + "/test/1646293161472.jpg");
+      Bitmap bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath() + "/test/1646292912747.jpg");
       filterView.setImageBitmap(bitmap);
       try {
-         filterHelper.execute(FilterType.FACE_SKIN_EPIDERMIS_SPOTS,bitmap,0);
-
-
+         filterHelper.execute(FilterType.FACE_SKIN_WRINKLE,bitmap,0);
       } catch (Exception e) {
          e.printStackTrace();
       }

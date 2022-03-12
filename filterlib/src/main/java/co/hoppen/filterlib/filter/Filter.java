@@ -4,6 +4,9 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.Log;
 
+import androidx.annotation.ColorRes;
+import androidx.core.graphics.ColorUtils;
+
 import com.blankj.utilcode.util.LogUtils;
 
 import org.opencv.android.Utils;
@@ -14,6 +17,7 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import co.hoppen.filterlib.FilterInfoResult;
@@ -126,15 +130,16 @@ public abstract class Filter {
             List<Mat> channels = new ArrayList<>();
             Core.split(yuvMat,channels);
             LogUtils.e(channels.size());
-            Mat outputMark = channels.get(1);
+            Mat outputMark = channels.get(0);
             Imgproc.threshold(outputMark,outputMark,0,255, Imgproc.THRESH_BINARY|Imgproc.THRESH_OTSU);
             yuvMat.copyTo(detect,outputMark);
 
             Mat strElement = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE,
                     new Size(8, 8), new Point(-1, -1));
 
-            Imgproc.dilate(detect,detect,strElement);
+            //
 
+            Imgproc.cvtColor(detect,detect,Imgproc.COLOR_YCrCb2RGB);
             Utils.matToBitmap(detect,bitmap);
 
             for (Mat mat : channels){
@@ -148,7 +153,7 @@ public abstract class Filter {
             int width = originalImage.getWidth();
             int height = originalImage.getHeight();
 
-            int []filterPixels = new int[width*height];
+            int [] filterPixels = new int[width*height];
             int [] originalPixels = new int[width * height];
 
             int [] dst = new int[width * height];
@@ -157,7 +162,46 @@ public abstract class Filter {
             bitmap.getPixels(filterPixels, 0, width, 0, 0, width, height);
             originalImage.getPixels(originalPixels, 0, width, 0, 0, width, height);
 
+
+            float [] s = new float[3];
+            ColorUtils.colorToHSL(Color.rgb(155,152,83),s);
             for (int i = 0; i < filterPixels.length; i++) {
+                int r = Color.red(filterPixels[i]);
+                int g = Color.green(filterPixels[i]);
+                int b = Color.blue(filterPixels[i]);
+                if (Color.rgb(r,g,b)==Color.rgb(0,135,0)){
+                    dst[i] = 0x00000000;
+                    continue;
+                }else {
+                    float [] hsb = rgb2hsb(r,g,b);
+                    if (hsb[1]<0.65f && hsb[1]>0.25f&&hsb[0]>=42&&hsb[0]<70){
+                        dst[i] = 0x00000000;
+                    }else {
+                        dst[i] = originalPixels[i];
+                    }
+                }
+            }
+
+
+            Bitmap create = Bitmap.createBitmap(dst, width, height, Bitmap.Config.ARGB_8888);
+            Mat result = new Mat();
+            Utils.bitmapToMat(create,result);
+            Imgproc.cvtColor(result,result,Imgproc.COLOR_RGB2GRAY);
+            Imgproc.GaussianBlur(result, result, new Size(7,7), 0);
+
+            Imgproc.threshold(result, result, 100, 255, Imgproc.THRESH_BINARY_INV);
+            Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT,
+                    new Size(6, 6), new Point(-1, -1));
+            Imgproc.morphologyEx(result,result,Imgproc.MORPH_CLOSE,kernel);
+
+            Utils.matToBitmap(result,create);
+            result.release();
+            kernel.release();
+
+            create.getPixels(filterPixels, 0, width, 0, 0, width, height);
+
+            for (int i = 0; i <filterPixels.length; i++) {
+                dst[i] = 0x00000000;
                 int r = Color.red(filterPixels[i]);
                 int g = Color.green(filterPixels[i]);
                 int b = Color.blue(filterPixels[i]);
@@ -165,8 +209,35 @@ public abstract class Filter {
                     dst[i] = originalPixels[i];
                 }
             }
-            return Bitmap.createBitmap(dst,width,height, Bitmap.Config.ARGB_8888);
+            create = Bitmap.createBitmap(dst, width, height, Bitmap.Config.ARGB_8888);
+            return create;
         }return null;
+    }
+
+    public static float[] rgb2hsb(int rgbR, int rgbG, int rgbB) {
+        assert 0 <= rgbR && rgbR <= 255;
+        assert 0 <= rgbG && rgbG <= 255;
+        assert 0 <= rgbB && rgbB <= 255;
+        int[] rgb = new int[]{ rgbR, rgbG, rgbB };
+        Arrays.sort(rgb);
+        int max = rgb[ 2 ];
+        int min = rgb[ 0 ];
+
+        float hsbB = max / 255.0f;
+        float hsbS = max == 0 ? 0 : (max - min) / (float) max;
+
+        float hsbH = 0;
+        if (max == rgbR && rgbG >= rgbB) {
+            hsbH = (rgbG - rgbB) * 60f / (max - min) + 0;
+        } else if (max == rgbR && rgbG < rgbB) {
+            hsbH = (rgbG - rgbB) * 60f / (max - min) + 360;
+        } else if (max == rgbG) {
+            hsbH = (rgbB - rgbR) * 60f / (max - min) + 120;
+        } else if (max == rgbB) {
+            hsbH = (rgbR - rgbG) * 60f / (max - min) + 240;
+        }
+
+        return new float[]{ hsbH, hsbS, hsbB };
     }
 
 }

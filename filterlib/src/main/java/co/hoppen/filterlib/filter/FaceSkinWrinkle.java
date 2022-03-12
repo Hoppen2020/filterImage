@@ -31,7 +31,14 @@ public class FaceSkinWrinkle extends Filter{
         try {
             Bitmap originalImage = getOriginalImage();
             if (!isEmptyBitmap(originalImage)){
-                Bitmap bitmap = getFaceSkin();
+                int height = originalImage.getHeight();
+                int width = originalImage.getWidth();
+
+                Bitmap bitmap =getFaceSkin();
+                int [] skin = new int[width * height];
+                bitmap.getPixels(skin, 0, width, 0, 0, width, height);
+
+//                        originalImage.copy(Bitmap.Config.ARGB_8888,true);
                 Mat grayMat = new Mat();
                 Utils.bitmapToMat(bitmap,grayMat);
                 Imgproc.cvtColor(grayMat,grayMat,Imgproc.COLOR_RGB2GRAY);
@@ -40,8 +47,6 @@ public class FaceSkinWrinkle extends Filter{
                 Core.convertScaleAbs(result, result);
                 Utils.matToBitmap(result,bitmap);
 
-                int height = originalImage.getHeight();
-                int width = originalImage.getWidth();
 
                 int [] pixels = new int[width * height];
                 int [] dstPixels = new int[width * height];
@@ -49,11 +54,16 @@ public class FaceSkinWrinkle extends Filter{
                 bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
                 originalImage.getPixels(dstPixels, 0, width, 0, 0, width, height);
                 for (int i = 0; i < pixels.length; i++) {
-                    int pixel = pixels[i];
-                    int r = Color.red(pixel);
-                    int g = Color.green(pixel);
-                    int b = Color.blue(pixel);
-                    if (Color.rgb(r,g,b)==Color.BLACK) {
+                    int a = Color.alpha(skin[i]);
+                    if (a==0){
+                        dstPixels[i] = 0x00000000;
+                        continue;
+                    }
+                    int r = Color.red(pixels[i]);
+                    int g = Color.green(pixels[i]);
+                    int b = Color.blue(pixels[i]);
+                    int color = Color.rgb(r,g,b);
+                    if (color==Color.BLACK) {
                         if (Color.alpha(dstPixels[i])!=0){
                             dstPixels[i] = Color.rgb(205,183,158);
                         }
@@ -61,7 +71,7 @@ public class FaceSkinWrinkle extends Filter{
                 }
                 Bitmap resultBitmap = Bitmap.createBitmap(dstPixels, width, height, Bitmap.Config.ARGB_8888);
                 filterInfoResult.setFilterBitmap(resultBitmap);
-                filterInfoResult.setType(FilterType.FOLLICLE_CLEAN_DEGREE);
+                filterInfoResult.setType(FilterType.FACE_SKIN_WRINKLE);
                 filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);
             }else{
                 filterInfoResult.setStatus(FilterInfoResult.Status.FAILURE);
