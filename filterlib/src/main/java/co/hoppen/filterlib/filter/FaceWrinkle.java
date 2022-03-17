@@ -7,15 +7,8 @@ import com.blankj.utilcode.util.LogUtils;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import co.hoppen.filterlib.FilterInfoResult;
 import co.hoppen.filterlib.FilterType;
@@ -23,7 +16,7 @@ import co.hoppen.filterlib.FilterType;
 /**
  * Created by YangJianHui on 2022/3/7.
  */
-public class FaceSkinWrinkle extends Filter{
+public class FaceWrinkle extends Filter{
 
     @Override
     public FilterInfoResult onFilter() {
@@ -47,6 +40,8 @@ public class FaceSkinWrinkle extends Filter{
                 Core.convertScaleAbs(result, result);
                 Utils.matToBitmap(result,bitmap);
 
+                grayMat.release();
+                result.release();
 
                 int [] pixels = new int[width * height];
                 int [] dstPixels = new int[width * height];
@@ -71,7 +66,7 @@ public class FaceSkinWrinkle extends Filter{
                 }
                 Bitmap resultBitmap = Bitmap.createBitmap(dstPixels, width, height, Bitmap.Config.ARGB_8888);
                 filterInfoResult.setFilterBitmap(resultBitmap);
-                filterInfoResult.setType(FilterType.FACE_SKIN_WRINKLE);
+                filterInfoResult.setType(FilterType.FACE_WRINKLE);
                 filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);
             }else{
                 filterInfoResult.setStatus(FilterInfoResult.Status.FAILURE);

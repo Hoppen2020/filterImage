@@ -214,7 +214,42 @@ public abstract class Filter {
         }return null;
     }
 
-    public static float[] rgb2hsb(int rgbR, int rgbG, int rgbB) {
+    /**
+     * src目标灰度，过滤alpha值等于0
+     * @param src
+     * @return
+     */
+    public int avgGray(Bitmap src){
+        int avgGray = 0;
+        if (src!=null){
+            int count = 0;
+            int width = src.getWidth();
+            int height = src.getHeight();
+           // int size = width * height;
+            int pixels [] = new int[width * height];
+            src.getPixels(pixels, 0, width, 0, 0, width, height);
+            int totalGray = 0;
+            for (int i = 0; i < pixels.length; i++) {
+                if (Color.alpha(pixels[i])==0){
+                    continue;
+                }
+                int r = Color.red(pixels[i]);
+                int g = Color.green(pixels[i]);
+                int b = Color.blue(pixels[i]);
+                int gray = (int) (r * 0.3 + g * 0.59 + b * 0.11);
+                totalGray += gray;
+                count++;
+            }
+            if (totalGray!=0 && count!=0){
+                avgGray = totalGray / count;
+            }
+            LogUtils.e(avgGray,totalGray);
+        }
+
+        return avgGray;
+    }
+
+    public float[] rgb2hsb(int rgbR, int rgbG, int rgbB) {
         assert 0 <= rgbR && rgbR <= 255;
         assert 0 <= rgbG && rgbG <= 255;
         assert 0 <= rgbB && rgbB <= 255;
