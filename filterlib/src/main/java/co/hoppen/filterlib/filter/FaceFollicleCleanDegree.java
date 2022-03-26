@@ -66,7 +66,7 @@ public class FaceFollicleCleanDegree extends Filter{
             for (int i = 0; i < list.size(); i++) {
                MatOfPoint point = list.get(i);
                if (point.size().area()<20){
-                  Imgproc.drawContours(oriMat,list,i,new Scalar(255,0,0));
+                  Imgproc.drawContours(oriMat,list,i,new Scalar(255,0,0,255));
                }
             }
             Utils.matToBitmap(oriMat,createBitmap);

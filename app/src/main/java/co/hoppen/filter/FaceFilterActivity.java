@@ -43,7 +43,7 @@ public class FaceFilterActivity extends AppCompatActivity implements OnFilterLis
 
       //mlkit test2  测试 part_1648291671107.png
 
-      bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath() + "/test2/part_1648291671107.png");
+      bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath() + "/test2/part_1648295749658.png");
       filterView.setImageBitmap(bitmap);
       try {
          filterHelper.execute(FilterType.FACE_EPIDERMIS_SPOTS,bitmap,0);

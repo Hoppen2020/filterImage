@@ -65,12 +65,11 @@ public class FaceEpidermisSpots extends Filter{
                 for (int i = 0; i < list.size(); i++) {
                     MatOfPoint point = list.get(i);
                     if (point.size().area()>5 && point.size().area()<=200){
-                        Imgproc.drawContours(resultMat,list,i,new Scalar(255,0,0));
+                        Imgproc.drawContours(resultMat,list,i,new Scalar(255,0,0,255));
                     }
                 }
 
                 Utils.matToBitmap(resultMat,cacheBitmap);
-
 
                 int width = originalImage.getWidth();
                 int height = originalImage.getHeight();
@@ -84,7 +83,7 @@ public class FaceEpidermisSpots extends Filter{
                 for (int i = 0; i < originalPixels.length; i++) {
                     int originalPixel = originalPixels[i];
                     if (Color.alpha(originalPixel)==0){
-                        result[i] = 0x00000000;
+                        result[i] = originalPixels[i];
                         continue;
                     }else {
                         result[i] = filterPixels[i];
