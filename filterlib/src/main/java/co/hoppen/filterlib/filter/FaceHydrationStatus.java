@@ -113,7 +113,7 @@ public class FaceHydrationStatus extends Filter{
                 filterInfoResult.setRatio((totalPercentPixels * 100 / count));
                 filterInfoResult.setDepth(0);
                 filterInfoResult.setFilterBitmap(bitmap);
-                filterInfoResult.setType(FilterType.SKIN_HYDRATION_STATUS);
+                filterInfoResult.setType(FilterType.FACE_HYDRATION_STATUS);
                 filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);
             }else filterInfoResult.setStatus(FilterInfoResult.Status.FAILURE);
         }catch (Exception e){

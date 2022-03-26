@@ -64,7 +64,7 @@ public class FacePorphyrin extends Filter{
                }else dstPixels[i] = originalPixels[i];
             }
             filterInfoResult.setFilterBitmap(Bitmap.createBitmap(dstPixels,width,height, Bitmap.Config.ARGB_8888));
-            filterInfoResult.setType(FilterType.FACE_SUPERFICIAL_PLAQUE);
+            filterInfoResult.setType(FilterType.FACE_PORPHYRIN);
             filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);
          }else filterInfoResult.setStatus(FilterInfoResult.Status.FAILURE);
       }catch (Exception e){

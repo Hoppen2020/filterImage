@@ -39,6 +39,7 @@ public enum FilterType {
     FACE_PORPHYRIN(FacePorphyrin.class),
     FACE_SUPERFICIAL_PLAQUE(FaceSuperficialPlaque.class),
     FACE_HORNY_PLUG(FaceHornyPlug.class),
+
     FACE_OIL_SECRETION(FaceOilSecretion.class),
     FACE_WRINKLE(FaceWrinkle.class),
 

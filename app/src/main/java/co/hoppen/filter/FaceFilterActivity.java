@@ -40,10 +40,13 @@ public class FaceFilterActivity extends AppCompatActivity implements OnFilterLis
 
       //局部 平衡偏振 part_1648032452811.jpg  part_1648032454435.jpg part_1648032457679.jpg part_1648032460162.jpg
 
-      bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath() + "/test/part_1648086669926.jpg");
+
+      //mlkit test2  测试 part_1648291671107.png
+
+      bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath() + "/test2/part_1648291671107.png");
       filterView.setImageBitmap(bitmap);
       try {
-         filterHelper.execute(FilterType.FACE_FOLLICLE_CLEAN_DEGREE,bitmap,0);
+         filterHelper.execute(FilterType.FACE_EPIDERMIS_SPOTS,bitmap,0);
       } catch (Exception e) {
          e.printStackTrace();
       }

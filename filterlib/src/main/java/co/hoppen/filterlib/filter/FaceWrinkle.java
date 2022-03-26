@@ -74,7 +74,7 @@ public class FaceWrinkle extends Filter{
                     int originalPixel = originalPixels[i];
                     if (Color.alpha(originalPixel)==0){
                         result[i] = 0x00000000;
-                        break;
+                        continue;
                     }
                     if (filterPixels[i]==Color.BLACK){
                         result[i] = originalPixels[i];
