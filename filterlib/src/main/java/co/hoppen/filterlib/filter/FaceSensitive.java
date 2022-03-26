@@ -16,6 +16,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.photo.Photo;
 
 import java.security.interfaces.RSAKey;
 import java.util.ArrayList;
@@ -46,7 +47,6 @@ public class FaceSensitive extends Filter{
             Utils.bitmapToMat(rangeBitmap,inRangeMat);
             Imgproc.cvtColor(inRangeMat,inRangeMat,Imgproc.COLOR_RGB2HSV);
             Core.inRange(inRangeMat,new Scalar(78,43,46),new Scalar(99,255,255),inRangeMat);
-            //Bitmap inRangeBitmap = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(inRangeMat,rangeBitmap);
             inRangeMat.release();
 
@@ -75,7 +75,7 @@ public class FaceSensitive extends Filter{
 //            Core.pow(detect,0.5,detect);
             Utils.matToBitmap(detect,bitmap);
             oriMat.release();
-            splitR.release();
+            //splitR.release();
             detect.release();
 
 
@@ -132,10 +132,6 @@ public class FaceSensitive extends Filter{
 
                   ColorUtils.colorToHSL(filterColor,hsl);
 
-                  if (a==0){
-                     LogUtils.e(Arrays.toString(hsl));
-                     a++;
-                  }
                   //(hsl[0]<=35 ||hsl[0]>=330) && hsl[2] >0.48f&& hsl[2] <=0.65f&& hsl[1] >= 0.08f
                   if ((hsl[0]<=35 ||hsl[0]>=330) && hsl[2] >0.4f&& hsl[2] <=0.7f&& hsl[1] >= 0.09f){//&&hsl[2]>0.45f
                      oB = (int) (oB + (oB*0.8f));
@@ -151,16 +147,6 @@ public class FaceSensitive extends Filter{
 
 
             Bitmap createBitmap = Bitmap.createBitmap(dstPixels, width, height, Bitmap.Config.ARGB_8888);
-
-//            Mat result = new Mat();
-//            Utils.bitmapToMat(createBitmap,result);
-//            Imgproc.cvtColor(result,result, Imgproc.COLOR_RGBA2GRAY);
-//            //opencv hsv 模式范围H[0...180] S[0...255] V[0...255]
-//            Mat strElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT,
-//                    new Size(8, 8), new Point(-1, -1));
-//            Imgproc.erode(result,result,strElement);
-//
-//            Utils.matToBitmap(result,createBitmap);
 
             filterInfoResult.setFilterBitmap(createBitmap);
             filterInfoResult.setType(FilterType.FACE_SENSITIVE);

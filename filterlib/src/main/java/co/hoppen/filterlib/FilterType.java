@@ -3,6 +3,7 @@ package co.hoppen.filterlib;
 import co.hoppen.filterlib.filter.CollagenStatus;
 import co.hoppen.filterlib.filter.ElasticFiberStatus;
 import co.hoppen.filterlib.filter.FaceEpidermisSpots;
+import co.hoppen.filterlib.filter.FaceFollicleCleanDegree;
 import co.hoppen.filterlib.filter.FaceHornyPlug;
 import co.hoppen.filterlib.filter.FaceHydrationStatus;
 import co.hoppen.filterlib.filter.FaceOilSecretion;
@@ -34,14 +35,18 @@ public enum FilterType {
     FACE_EPIDERMIS_SPOTS(FaceEpidermisSpots.class),
 
 
-
     FACE_SENSITIVE(FaceSensitive.class),
     FACE_PORPHYRIN(FacePorphyrin.class),
     FACE_SUPERFICIAL_PLAQUE(FaceSuperficialPlaque.class),
     FACE_HORNY_PLUG(FaceHornyPlug.class),
     FACE_OIL_SECRETION(FaceOilSecretion.class),
     FACE_WRINKLE(FaceWrinkle.class),
+
+    FACE_FOLLICLE_CLEAN_DEGREE(FaceFollicleCleanDegree.class),
+
     TEST(TestFilter.class);
+
+
 
 
     private Class<? extends Filter> type;

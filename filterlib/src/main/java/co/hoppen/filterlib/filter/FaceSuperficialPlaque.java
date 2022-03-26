@@ -25,6 +25,7 @@ import co.hoppen.filterlib.FilterInfoResult;
 import co.hoppen.filterlib.FilterType;
 
 /**
+ * 浅层斑 uv
  * Created by YangJianHui on 2022/3/12.
  */
 public class FaceSuperficialPlaque extends Filter{

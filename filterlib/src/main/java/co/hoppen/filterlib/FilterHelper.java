@@ -8,23 +8,7 @@ import org.opencv.android.OpenCVLoader;
 
 import java.lang.reflect.Constructor;
 
-import co.hoppen.filterlib.filter.CollagenStatus;
-import co.hoppen.filterlib.filter.ElasticFiberStatus;
-import co.hoppen.filterlib.filter.FaceHornyPlug;
-import co.hoppen.filterlib.filter.FaceHydrationStatus;
-import co.hoppen.filterlib.filter.FaceOilSecretion;
-import co.hoppen.filterlib.filter.FaceEpidermisSpots;
-import co.hoppen.filterlib.filter.FacePorphyrin;
-import co.hoppen.filterlib.filter.FaceSensitive;
-import co.hoppen.filterlib.filter.FaceWrinkle;
-import co.hoppen.filterlib.filter.FaceSuperficialPlaque;
 import co.hoppen.filterlib.filter.Filter;
-import co.hoppen.filterlib.filter.FollicleCleanDegree;
-import co.hoppen.filterlib.filter.SkinHydrationStatus;
-import co.hoppen.filterlib.filter.SkinOilSecretion;
-import co.hoppen.filterlib.filter.SkinPigmentStatus;
-import co.hoppen.filterlib.filter.SkinRedBloodStatus;
-import co.hoppen.filterlib.filter.TestFilter;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.functions.Consumer;

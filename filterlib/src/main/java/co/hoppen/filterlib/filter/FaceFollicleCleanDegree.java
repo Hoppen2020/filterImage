@@ -7,11 +7,15 @@ import com.blankj.utilcode.util.LogUtils;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,60 +33,66 @@ public class FaceFollicleCleanDegree extends Filter{
       try {
          Bitmap originalImage = getOriginalImage();
          if (!isEmptyBitmap(originalImage)){
+            Bitmap createBitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
+            Mat filterMat = new Mat();
+            Utils.bitmapToMat(createBitmap,filterMat);
 
-            Mat mat = new Mat();
-            Utils.bitmapToMat(originalImage,mat);
+            Mat oriMat = new Mat();
+            Utils.bitmapToMat(createBitmap,oriMat);
 
-            Imgproc.cvtColor(mat,mat,Imgproc.COLOR_RGBA2RGB);
+            List<Mat> rgbList = new ArrayList<>();
+            Core.split(filterMat,rgbList);
 
-            List<Mat> color = new ArrayList<>();
-            Core.split(mat,color);
+            Mat blueMat = rgbList.get(2);
 
-//                LogUtils.e(color.size());
+            Imgproc.blur(blueMat,filterMat,new Size(5,5));
 
-            Mat mat1 = color.get(0);
+            Imgproc.adaptiveThreshold(filterMat,filterMat,255,Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,Imgproc.THRESH_BINARY,7,2);
 
-            Imgproc.threshold(mat1,mat1,95,255,Imgproc.THRESH_BINARY);
+            Imgproc.medianBlur(filterMat,filterMat,5);
 
-            Mat strElement = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE,
-                    new Size(5, 5), new Point(-1, -1));
+            Mat structuringElement = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(5, 5));
 
-            Imgproc.dilate(mat1,mat1,strElement);
+            Imgproc.erode(filterMat,filterMat,structuringElement);
 
+            Imgproc.dilate(filterMat,filterMat,structuringElement);
 
-            Imgproc.medianBlur(mat1,mat1,3);
+            List<MatOfPoint> list = new ArrayList<>();
 
-            Mat circles = new Mat();//存储线的容器
-//                Imgproc.HoughCircles(mat1,circles,Imgproc.CV_HOUGH_GRADIENT,2,5,10,15,1,30);
-//                for(int i = 0;i<circles.cols();i++){
-//                    float[] circle = new float[3];
-//                    circles.get(0,i,circle);//将圆对应的坐标存到circle数组中
-//                    Imgproc.circle(mat1,new Point(circle[0],circle[1]), (int) circle[2],new Scalar(255,0,0),2,Imgproc.LINE_AA);//画边缘
-//                }
+            Imgproc.findContours(filterMat,list,new Mat(), Imgproc.RETR_LIST,Imgproc.CHAIN_APPROX_NONE);
+
+            LogUtils.e(list.size());
+
+            for (int i = 0; i < list.size(); i++) {
+               MatOfPoint point = list.get(i);
+               if (point.size().area()<20){
+                  Imgproc.drawContours(oriMat,list,i,new Scalar(255,0,0));
+               }
+            }
+            Utils.matToBitmap(oriMat,createBitmap);
 
             int width = originalImage.getWidth();
             int height = originalImage.getHeight();
-
-            Bitmap filterBitmap = Bitmap.createBitmap(originalImage.getWidth(),originalImage.getHeight(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(mat1,filterBitmap);
-
-            int [] originalPixels = new int[width * height];
+            int count = width * height;
+            int [] originalPixels = new int[count];
+            int [] filterPixels = new int[count];
+            int [] result = new int[count];
             originalImage.getPixels(originalPixels,0,width,0,0,width,height);
+            createBitmap.getPixels(filterPixels,0,width,0,0,width,height);
 
-            int [] pixels = new int[width * height];
-            filterBitmap.getPixels(pixels,0,width,0,0,width,height);
-            for (int i = 0; i < pixels.length; i++) {
-               if (pixels[i]== Color.WHITE){
-                  originalPixels[i] =Color.RED;
+            for (int i = 0; i < originalPixels.length; i++) {
+               int originalPixel = originalPixels[i];
+               if (Color.alpha(originalPixel)==0){
+                  result[i] = 0x00000000;
+                  break;
+               }else {
+                  result[i] = filterPixels[i];
                }
             }
+            createBitmap = Bitmap.createBitmap(result,width,height, Bitmap.Config.ARGB_8888);
 
-            Bitmap newBitmap = Bitmap.createBitmap(width, height,Bitmap.Config.ARGB_8888);
-            newBitmap.setPixels(originalPixels,0,width, 0, 0, width, height);
-
-
-            filterInfoResult.setFilterBitmap(newBitmap);
-            filterInfoResult.setType(FilterType.FOLLICLE_CLEAN_DEGREE);
+            filterInfoResult.setFilterBitmap(createBitmap);
+            filterInfoResult.setType(FilterType.FACE_FOLLICLE_CLEAN_DEGREE);
             filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);
          }else{
             filterInfoResult.setStatus(FilterInfoResult.Status.FAILURE);

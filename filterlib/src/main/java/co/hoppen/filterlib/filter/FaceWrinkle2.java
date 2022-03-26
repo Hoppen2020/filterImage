@@ -3,17 +3,21 @@ package co.hoppen.filterlib.filter;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
-import com.blankj.utilcode.util.ColorUtils;
+import androidx.annotation.ColorRes;
+import androidx.core.graphics.ColorUtils;
+
 import com.blankj.utilcode.util.LogUtils;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.photo.Photo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,10 +26,13 @@ import java.util.List;
 import co.hoppen.filterlib.FilterInfoResult;
 import co.hoppen.filterlib.FilterType;
 
+import static java.lang.Math.PI;
+import static org.opencv.core.CvType.CV_8U;
+
 /**
  * Created by YangJianHui on 2022/3/7.
  */
-public class FaceWrinkle extends Filter{
+public class FaceWrinkle2 extends Filter{
 
     private int w = 5;
 
@@ -37,57 +44,34 @@ public class FaceWrinkle extends Filter{
         try {
             Bitmap originalImage = getOriginalImage();
             if (!isEmptyBitmap(originalImage)){
-                Bitmap createBitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
+                Bitmap cacheBitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
 
-                Mat oriMat =new Mat();
-                Utils.bitmapToMat(createBitmap,oriMat);
+                Mat oriMat = new Mat();
+                Utils.bitmapToMat(cacheBitmap,oriMat);
 
-                Mat filterMat = new Mat();
-                Utils.bitmapToMat(createBitmap,filterMat);
+                Mat grayMat = new Mat();
+                Imgproc.cvtColor(oriMat,grayMat,Imgproc.COLOR_RGBA2GRAY);
 
-                List<Mat> rgbList = new ArrayList<>();
+                Mat result = new Mat();
 
-                Core.split(filterMat,rgbList);
 
-                Mat gMat = rgbList.get(1);
+                LogUtils.e(Math.toDegrees(90));
 
-                Imgproc.equalizeHist(gMat,filterMat);
+                Mat gaborKernel = Imgproc.getGaborKernel(new Size(5, 5), 10, 0 ,5, 0.5, 0, CvType.CV_32F);
 
-                Mat structuringElement = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(5, 5));
+                Imgproc.filter2D(grayMat,result,-1,gaborKernel,new Point(-1,-1),0,Core.BORDER_CONSTANT);
 
-                Imgproc.morphologyEx(filterMat,filterMat,Imgproc.MORPH_BLACKHAT,structuringElement);
+                //Imgproc.morphologyEx(result,result,Imgproc.MORPH_CLOSE ,gaborKernel,new Point(-1,-1));
 
-                Core.inRange(filterMat,new Scalar(30,30,30),new Scalar(255,255,255),filterMat);
+                Imgproc.threshold(result,result,50,255, Imgproc.THRESH_BINARY);
 
-                Utils.matToBitmap(filterMat,createBitmap);
+                Utils.matToBitmap(result,cacheBitmap);
 
-                int width = originalImage.getWidth();
-                int height = originalImage.getHeight();
-                int count = width * height;
-                int [] originalPixels = new int[count];
-                int [] filterPixels = new int[count];
-                int [] result = new int[count];
-                originalImage.getPixels(originalPixels,0,width,0,0,width,height);
-                createBitmap.getPixels(filterPixels,0,width,0,0,width,height);
 
-                for (int i = 0; i < originalPixels.length; i++) {
-                    int originalPixel = originalPixels[i];
-                    if (Color.alpha(originalPixel)==0){
-                        result[i] = 0x00000000;
-                        break;
-                    }
-                    if (filterPixels[i]==Color.BLACK){
-                        result[i] = originalPixels[i];
-                    }else {
-                        result[i] = Color.rgb(255,238,43);
-                    }
-                }
-                createBitmap = Bitmap.createBitmap(result,width,height, Bitmap.Config.ARGB_8888);
 
-                filterInfoResult.setFilterBitmap(createBitmap);
+                filterInfoResult.setFilterBitmap(cacheBitmap);
                 filterInfoResult.setType(FilterType.FACE_WRINKLE);
                 filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);
-
             }else{
                 filterInfoResult.setStatus(FilterInfoResult.Status.FAILURE);
             }
@@ -104,9 +88,11 @@ public class FaceWrinkle extends Filter{
     }
 
     private void printlnArray(float[][] data){
+        LogUtils.e("start----------");
         for (int i = 0; i <data.length; i++) {
             LogUtils.e(Arrays.toString(data[i]));
         }
+        LogUtils.e("end----------");
     }
 
     private float[] change(float[][] data){
