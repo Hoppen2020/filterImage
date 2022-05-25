@@ -44,11 +44,25 @@ dependencies {
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    implementation project(path: ':openCVLibrary343')
+//    implementation project(path: ':openCVLibrary343')
+//    implementation project(path: 'sdk452')
+    implementation project(path: ':sdk452')
 
-    api 'com.blankj:utilcodex:1.30.6'
+    // 引入基础SDK
+    implementation 'com.huawei.hms:ml-computer-vision-face:3.3.0.300'
+    // 引入人脸轮廓+关键点检测模型包
+    implementation 'com.huawei.hms:ml-computer-vision-face-shape-point-model:3.3.0.300'
+    // 引入表情检测模型包
+    implementation 'com.huawei.hms:ml-computer-vision-face-emotion-model:3.3.0.300'
+    // 引入特征检测模型包
+    implementation 'com.huawei.hms:ml-computer-vision-face-feature-model:3.3.0.300'
+
+
+    api 'com.blankj:utilcodex:1.31.0'
     api 'io.reactivex.rxjava3:rxjava:3.1.1'
     api 'io.reactivex.rxjava3:rxandroid:3.0.0'
+
+
 
 
 }

@@ -1,6 +1,7 @@
 package co.hoppen.filterlib.filter;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 
 import androidx.core.graphics.ColorUtils;
@@ -24,13 +25,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+import co.hoppen.filterlib.FacePart;
 import co.hoppen.filterlib.FilterInfoResult;
 import co.hoppen.filterlib.FilterType;
 
 /**
  * Created by YangJianHui on 2022/3/12.
  */
-public class FaceSensitive extends Filter{
+public class FaceSensitive extends Filter implements FaceFilter{
 
 
    @Override
@@ -39,116 +41,105 @@ public class FaceSensitive extends Filter{
       try {
          Bitmap originalImage = getOriginalImage();
          if (!isEmptyBitmap(originalImage)){
-            int width = originalImage.getWidth();
-            int height = originalImage.getHeight();
-
-            Mat inRangeMat = new Mat();
-            Bitmap rangeBitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
-            Utils.bitmapToMat(rangeBitmap,inRangeMat);
-            Imgproc.cvtColor(inRangeMat,inRangeMat,Imgproc.COLOR_RGB2HSV);
-            Core.inRange(inRangeMat,new Scalar(78,43,46),new Scalar(99,255,255),inRangeMat);
-            Utils.matToBitmap(inRangeMat,rangeBitmap);
-            inRangeMat.release();
-
             Bitmap bitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
 
             Mat oriMat = new Mat();
             Utils.bitmapToMat(bitmap,oriMat);
-            // R G B A
-            List<Mat> rgbList = new ArrayList<>();
-            //通道分离
-            Core.split(oriMat,rgbList);
-            Mat splitR = rgbList.get(0);
-            //Mat splitG = rgbList.get(1);
-            //Mat splitB = rgbList.get(2);
+            Imgproc.cvtColor(oriMat,oriMat,Imgproc.COLOR_RGBA2RGB);
 
-            Mat detect = new Mat();
+            Mat skinMat = new Mat();
+            Utils.bitmapToMat(bitmap,skinMat);
 
-            rgbList.clear();
-            rgbList.add(splitR);
-            rgbList.add(new Mat(oriMat.rows(),oriMat.cols(),CvType.CV_8UC1));
-            rgbList.add(new Mat(oriMat.rows(),oriMat.cols(),CvType.CV_8UC1));
-            Core.merge(rgbList,detect);
+            Imgproc.cvtColor(skinMat,skinMat,Imgproc.COLOR_RGBA2RGB);
+
+            Mat hsv = new Mat();
+            Imgproc.cvtColor(skinMat,hsv,Imgproc.COLOR_RGB2HSV);
+
+            List<Mat> list = new ArrayList<>();
+            Core.split(hsv,list);
+
+//            Mat mat = list.get(1);
+//
+//            Core.inRange(mat,new Scalar(30,30,30),new Scalar(200,200,200),mat);
+
+            Core.bitwise_not(skinMat,skinMat);
+
+            Imgproc.cvtColor(skinMat,skinMat,Imgproc.COLOR_RGB2HSV);
+            Mat redLightMask = new Mat();
+            Mat redDarkMask = new Mat();
+            Core.inRange(skinMat,new Scalar(156,43,46),new Scalar(180,255,255),redLightMask);
+            Core.inRange(skinMat,new Scalar(0,43,46),new Scalar(10,255,255),redDarkMask);
+
+            Mat addMask = new Mat();
+            Core.add(redLightMask,redDarkMask,addMask);
+            Core.bitwise_not(addMask,addMask);
+
+            Mat grayMat = new Mat();
+            Imgproc.cvtColor(oriMat,grayMat,Imgproc.COLOR_RGB2GRAY);
+
+            Imgproc.threshold(grayMat,grayMat,0,255,Imgproc.THRESH_OTSU|Imgproc.THRESH_BINARY);
+
+            Mat mixMask = new Mat();
+            Core.bitwise_and(addMask,grayMat,mixMask,addMask);
+
+            Mat faceMat = new Mat();
+
+            Core.bitwise_and(oriMat,oriMat,faceMat,mixMask);
+
+//            Mat red = new Mat(oriMat.rows(),oriMat.cols(),CvType.CV_8UC3);
+//            red.setTo(new Scalar(163,46,63));//163,46,63
+
+//            Mat dst = new Mat();
+//
+//            Core.addWeighted(faceMat,1.0,red,0.7,0.,dst);
+
+            Imgproc.cvtColor(faceMat,faceMat,Imgproc.COLOR_RGB2HSV);
+
+            List<Mat> hsvList = new ArrayList<>();
+            Core.split(faceMat,hsvList);
+
+            Mat vChannelMat = new Mat();
+            Core.add(hsvList.get(1),hsvList.get(1),vChannelMat);
+            Core.add(vChannelMat,new Scalar(5,5,5),vChannelMat);
+            hsvList.set(1,vChannelMat);
 
 
-            Imgproc.cvtColor(detect,detect,Imgproc.COLOR_RGBA2GRAY);//COLOR_RGBA2GRAY
-//            Core.pow(detect,0.5,detect);
-            Utils.matToBitmap(detect,bitmap);
-            oriMat.release();
-            //splitR.release();
-            detect.release();
+            Core.merge(hsvList,vChannelMat);
 
+//            Core.inRange(vChannelMat,new Scalar(156,43,46),new Scalar(180,255,255),redLightMask);
+//            Core.inRange(vChannelMat,new Scalar(0,43,46),new Scalar(10,255,255),redDarkMask);
+//
+//            Core.add(redLightMask,redDarkMask,addMask);
+//
+//            Core.bitwise_and(vChannelMat,vChannelMat,faceMat,addMask);
+            Imgproc.cvtColor(vChannelMat,vChannelMat,Imgproc.COLOR_HSV2RGB);
 
-            int avgGray = 0;
-            int totalGray = 0;
-            int count = 0;
+            Utils.matToBitmap(vChannelMat,bitmap);
 
-
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
             int [] filterPixels = new int[width * height];
-            int [] originalPixels = new int[width * height];
-            int [] dstPixels = new int[width * height];
-            int [] isRangePixels = new int[width * height];
-
-            bitmap.getPixels(filterPixels, 0, width, 0, 0, width, height);
-            originalImage.getPixels(originalPixels, 0, width, 0, 0, width, height);
-            rangeBitmap.getPixels(isRangePixels, 0, width, 0, 0, width, height);
-
+//            Bitmap filterBitmap = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
+            int [] basemap = new int[width * height];
+            bitmap.getPixels(filterPixels,0,width,0,0,width,height);
             for (int i = 0; i < filterPixels.length; i++) {
-               if (Color.alpha(originalPixels[i])==0|| Color.red(filterPixels[i])==0){
-                  continue;
-               }
-                  int r =Color.red(filterPixels[i]);
-                  totalGray += r;
-                  count++;
-            }
-            avgGray = totalGray /count;
-
-            //cache data
-            float [] hsl = new float[3];
-            int a = 0;
-
-            for (int i = 0; i < filterPixels.length; i++) {
-               if (Color.alpha(originalPixels[i])==0){
-                  dstPixels[i] = 0x00000000;
-                  continue;
-               }
-               if (Color.WHITE==isRangePixels[i]){
-                  dstPixels[i] =
-//                          0x00000000;
-                          originalPixels[i];
-                  continue;
-               }
-               int r =Color.red(filterPixels[i]);
-               if (r<avgGray){
-                  dstPixels[i] =
-//                          0x00000000;
-                          originalPixels[i];
+               int pixels = filterPixels[i];
+               if (Color.BLACK==pixels){
+                  basemap[i] = 0x00000000;
                }else {
-                  int oR = Color.red(originalPixels[i]);
-                  int oG = Color.green(originalPixels[i]);
-                  int oB = Color.blue(originalPixels[i]);
-
-                  int filterColor = Color.rgb(oR,oG,oB);
-
-                  ColorUtils.colorToHSL(filterColor,hsl);
-
-                  //(hsl[0]<=35 ||hsl[0]>=330) && hsl[2] >0.48f&& hsl[2] <=0.65f&& hsl[1] >= 0.08f
-                  if ((hsl[0]<=35 ||hsl[0]>=330) && hsl[2] >0.4f&& hsl[2] <=0.7f&& hsl[1] >= 0.09f){//&&hsl[2]>0.45f
-                     oB = (int) (oB + (oB*0.8f));
-                     if (oB>=255) oB = 255;
-                     filterColor = Color.rgb(oB,oG,oR);
-                  }else {
-//                     filterColor =
-//                             0x00000000;
-                  }
-                  dstPixels[i] = filterColor;
+                  basemap[i] = filterPixels[i];
                }
             }
+            Bitmap basemapBitmap = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
+            basemapBitmap.setPixels(basemap,0,width, 0, 0, width, height);
 
+            Bitmap resultBitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
+            Canvas canvas = new Canvas(resultBitmap);
+            canvas.drawBitmap(basemapBitmap,0,0,null);
+            if (!bitmap.isRecycled())bitmap.recycle();
+            if (!basemapBitmap.isRecycled())basemapBitmap.recycle();
 
-            Bitmap createBitmap = Bitmap.createBitmap(dstPixels, width, height, Bitmap.Config.ARGB_8888);
-
-            filterInfoResult.setFilterBitmap(createBitmap);
+            filterInfoResult.setFilterBitmap(resultBitmap);
             filterInfoResult.setType(FilterType.FACE_SENSITIVE);
             filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);
          }else filterInfoResult.setStatus(FilterInfoResult.Status.FAILURE);
@@ -158,4 +149,8 @@ public class FaceSensitive extends Filter{
       return filterInfoResult;
    }
 
+   @Override
+   public FacePart[] getFacePart() {
+      return new FacePart[]{FacePart.FACE_SKIN};
+   }
 }

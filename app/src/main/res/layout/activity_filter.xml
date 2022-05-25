@@ -9,7 +9,7 @@
         android:layout_width="1080px"
         android:layout_height="1920px"
         android:layout_gravity="center"
-        android:scaleType="fitXY"
+        android:scaleType="centerInside"
         android:id="@+id/iv_filter"
         />
 

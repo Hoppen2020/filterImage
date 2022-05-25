@@ -11,13 +11,14 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
+import co.hoppen.filterlib.FacePart;
 import co.hoppen.filterlib.FilterInfoResult;
 import co.hoppen.filterlib.FilterType;
 
 /**
  * Created by YangJianHui on 2022/3/12.
  */
-public class FacePorphyrin extends Filter{
+public class FacePorphyrin extends Filter implements FaceFilter{
 
    @Override
    public FilterInfoResult onFilter() {
@@ -26,7 +27,8 @@ public class FacePorphyrin extends Filter{
          Bitmap originalImage = getOriginalImage();
          if (!isEmptyBitmap(originalImage)){
 
-            Bitmap bitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
+            Bitmap bitmap = getFacePartImage();
+//                    originalImage.copy(Bitmap.Config.ARGB_8888,true);
 
 //            int avgGray = avgGray(bitmap);
 //            LogUtils.e(avgGray+"*");
@@ -60,7 +62,7 @@ public class FacePorphyrin extends Filter{
                int g = Color.green(pixels[i]);
                int b = Color.blue(pixels[i]);
                if (Color.rgb(r,g,b) == Color.WHITE){
-                  dstPixels[i] = Color.rgb(255,0,0);
+                  dstPixels[i] = Color.rgb(255,255,0);
                }else dstPixels[i] = originalPixels[i];
             }
             filterInfoResult.setFilterBitmap(Bitmap.createBitmap(dstPixels,width,height, Bitmap.Config.ARGB_8888));
@@ -73,4 +75,9 @@ public class FacePorphyrin extends Filter{
       return filterInfoResult;
    }
 
+
+   @Override
+   public FacePart[] getFacePart() {
+      return new FacePart[]{FacePart.FACE_T,FacePart.FACE_LEFT_RIGHT_AREA};
+   }
 }

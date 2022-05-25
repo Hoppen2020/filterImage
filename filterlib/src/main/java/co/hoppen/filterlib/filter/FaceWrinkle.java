@@ -1,6 +1,7 @@
 package co.hoppen.filterlib.filter;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 
 import com.blankj.utilcode.util.ColorUtils;
@@ -19,13 +20,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import co.hoppen.filterlib.FacePart;
 import co.hoppen.filterlib.FilterInfoResult;
 import co.hoppen.filterlib.FilterType;
 
 /**
  * Created by YangJianHui on 2022/3/7.
  */
-public class FaceWrinkle extends Filter{
+public class FaceWrinkle extends Filter implements FaceFilter{
 
     private int w = 5;
 
@@ -37,7 +39,7 @@ public class FaceWrinkle extends Filter{
         try {
             Bitmap originalImage = getOriginalImage();
             if (!isEmptyBitmap(originalImage)){
-                Bitmap createBitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
+                Bitmap createBitmap = getFacePartImage();
 
                 Mat oriMat =new Mat();
                 Utils.bitmapToMat(createBitmap,oriMat);
@@ -61,6 +63,16 @@ public class FaceWrinkle extends Filter{
 
                 Utils.matToBitmap(filterMat,createBitmap);
 
+                oriMat.release();
+                filterMat.release();
+                gMat.release();
+                structuringElement.release();
+
+//                Bitmap resultBitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
+//                Canvas canvas = new Canvas(resultBitmap);
+//                canvas.drawBitmap(createBitmap,0,0,null);
+//                if (!createBitmap.isRecycled())createBitmap.recycle();
+
                 int width = originalImage.getWidth();
                 int height = originalImage.getHeight();
                 int count = width * height;
@@ -70,12 +82,7 @@ public class FaceWrinkle extends Filter{
                 originalImage.getPixels(originalPixels,0,width,0,0,width,height);
                 createBitmap.getPixels(filterPixels,0,width,0,0,width,height);
 
-                for (int i = 0; i < originalPixels.length; i++) {
-                    int originalPixel = originalPixels[i];
-                    if (Color.alpha(originalPixel)==0){
-                        result[i] = 0x00000000;
-                        continue;
-                    }
+                for (int i = 0; i < filterPixels.length; i++) {
                     if (filterPixels[i]==Color.BLACK){
                         result[i] = originalPixels[i];
                     }else {
@@ -126,4 +133,8 @@ public class FaceWrinkle extends Filter{
         return re;
     }
 
+    @Override
+    public FacePart[] getFacePart() {
+        return new FacePart[]{FacePart.FACE_FOREHEAD,FacePart.FACE_NOSE_LEFT_RIGHT,FacePart.FACE_EYE_BOTTOM};
+    }
 }

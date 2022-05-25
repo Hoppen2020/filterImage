@@ -259,7 +259,6 @@ public class MainActivity extends AppCompatActivity implements OnDeviceListener,
         save(filterBitmap);
     }
 
-
     public void save(Bitmap bitmap){
         XXPermissions.with(this).permission(Permission.Group.STORAGE).request(new OnPermissionCallback() {
             @Override
@@ -310,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements OnDeviceListener,
 
 
     @Override
-    public void OnFilter(FilterInfoResult filterInfoResult) {
+    public void onFilter(FilterInfoResult filterInfoResult) {
         if (filterInfoResult.getStatus()== FilterInfoResult.Status.SUCCESS){
             isFilter = true;
             filterBitmap = filterInfoResult.getFilterBitmap();

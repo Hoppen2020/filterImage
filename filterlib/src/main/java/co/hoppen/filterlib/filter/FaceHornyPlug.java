@@ -9,13 +9,14 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
+import co.hoppen.filterlib.FacePart;
 import co.hoppen.filterlib.FilterInfoResult;
 import co.hoppen.filterlib.FilterType;
 
 /**
  * Created by YangJianHui on 2022/3/12.
  */
-public class FaceHornyPlug extends Filter{
+public class FaceHornyPlug extends Filter implements FaceFilter{
 
    @Override
    public FilterInfoResult onFilter() {
@@ -24,7 +25,8 @@ public class FaceHornyPlug extends Filter{
          Bitmap originalImage = getOriginalImage();
          if (!isEmptyBitmap(originalImage)){
 
-            Bitmap bitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
+            Bitmap bitmap = getFacePartImage();
+//                    originalImage.copy(Bitmap.Config.ARGB_8888,true);
 
             Mat oriMat = new Mat();
             Utils.bitmapToMat(bitmap,oriMat);
@@ -73,4 +75,8 @@ public class FaceHornyPlug extends Filter{
       return filterInfoResult;
    }
 
+   @Override
+   public FacePart[] getFacePart() {
+      return new FacePart[]{FacePart.FACE_T,FacePart.FACE_LEFT_RIGHT_AREA};
+   }
 }

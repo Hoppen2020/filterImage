@@ -3,24 +3,34 @@ package co.hoppen.filterlib.filter;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.Log;
+import android.util.SparseArray;
 
 import androidx.annotation.ColorRes;
 import androidx.core.graphics.ColorUtils;
 
+import com.blankj.utilcode.util.GsonUtils;
 import com.blankj.utilcode.util.LogUtils;
+import com.blankj.utilcode.util.SPUtils;
+import com.huawei.hms.mlsdk.common.MLFrame;
+import com.huawei.hms.mlsdk.face.MLFace;
+import com.huawei.hms.mlsdk.face.MLFaceAnalyzer;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import co.hoppen.filterlib.FacePart;
 import co.hoppen.filterlib.FilterInfoResult;
+import co.hoppen.filterlib.utils.CutoutUtils;
 
 /**
  * Created by YangJianHui on 2021/9/10.
@@ -28,6 +38,7 @@ import co.hoppen.filterlib.FilterInfoResult;
 public abstract class Filter {
     private Bitmap originalImage;
     private float resistance;
+    private Bitmap facePartImage;
 
     Filter(){
     }
@@ -275,4 +286,68 @@ public abstract class Filter {
         return new float[]{ hsbH, hsbS, hsbB };
     }
 
+    protected Bitmap getRgbSkin(){
+        if (originalImage!=null){
+            Bitmap copy = originalImage.copy(Bitmap.Config.ARGB_8888, true);
+            Mat oriMat = new Mat();
+            Utils.bitmapToMat(copy,oriMat);
+
+            Mat hsvMat = new Mat();
+            Imgproc.cvtColor(oriMat,hsvMat,Imgproc.COLOR_RGB2HSV);
+            Core.inRange(hsvMat,new Scalar(0,15,0),new Scalar(17,170,255),hsvMat);
+
+            Mat yCrBrMat = new Mat();
+            Imgproc.cvtColor(oriMat,yCrBrMat,Imgproc.COLOR_RGB2YCrCb);
+            Core.inRange(yCrBrMat,new Scalar(0,135,85),new Scalar(255,180,135),yCrBrMat);
+
+            Mat mask = new Mat();
+            Core.bitwise_and(hsvMat,yCrBrMat,mask);
+
+            Mat result = new Mat();
+            Core.bitwise_and(oriMat,oriMat,result,mask);
+            Utils.matToBitmap(result,copy);
+
+            oriMat.release();
+            hsvMat.release();
+            yCrBrMat.release();
+            mask.release();
+            result.release();
+            return copy;
+        }
+        return null;
+    }
+
+    private void setFacePartImage(Bitmap facePartImage) {
+        this.facePartImage = facePartImage;
+    }
+
+    public Bitmap getFacePartImage() {
+        return facePartImage;
+    }
+
+    public boolean facePositioning(MLFaceAnalyzer analyzer){
+        try {
+            MLFace result = null;
+            MLFrame frame = MLFrame.fromBitmap(originalImage);
+            SparseArray<MLFace> mlFaceSparseArray = analyzer.analyseFrame(frame);
+            if (mlFaceSparseArray.size()>0){
+                result = mlFaceSparseArray.get(0);
+                String face = GsonUtils.toJson(result);
+                SPUtils.getInstance().put("face",face);
+//                LogUtils.e(face);
+                //GsonUtils.fromJson(result,GsonUtils.getType(Result.class, GsonUtils.getListType(Person.class));
+            }else {
+                String face = SPUtils.getInstance().getString("face");
+                result = GsonUtils.fromJson(face,GsonUtils.getType(MLFace.class));
+            }
+            analyzer.stop();
+            if (result!=null){
+                setFacePartImage(CutoutUtils.cutoutPart(originalImage,((FaceFilter) this).getFacePart(),result));
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

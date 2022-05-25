@@ -1,13 +1,16 @@
 package co.hoppen.filterlib.filter;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 
 import androidx.recyclerview.widget.AsyncListUtil;
 
 import com.blankj.utilcode.util.LogUtils;
+import com.huawei.hms.mlsdk.face.MLFaceAnalyzer;
 
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Scalar;
@@ -17,6 +20,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
+import co.hoppen.filterlib.FacePart;
 import co.hoppen.filterlib.FilterInfoResult;
 import co.hoppen.filterlib.FilterType;
 
@@ -24,11 +28,7 @@ import co.hoppen.filterlib.FilterType;
  * 表面斑 RGB light
  * Created by YangJianHui on 2022/3/7.
  */
-public class FaceEpidermisSpots extends Filter{
-
-    private Size maxSize;
-
-    private Size minSize;
+public class FaceEpidermisSpots extends Filter implements FaceFilter{
 
     @Override
     public FilterInfoResult onFilter() {
@@ -36,7 +36,9 @@ public class FaceEpidermisSpots extends Filter{
         try {
             Bitmap originalImage = getOriginalImage();
             if (!isEmptyBitmap(originalImage)){
-                Bitmap cacheBitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
+                Bitmap cacheBitmap =
+                        //getRgbSkin();
+                        getFacePartImage();
 
                 Mat resultMat = new Mat();
                 Utils.bitmapToMat(cacheBitmap,resultMat);
@@ -71,27 +73,15 @@ public class FaceEpidermisSpots extends Filter{
 
                 Utils.matToBitmap(resultMat,cacheBitmap);
 
-                int width = originalImage.getWidth();
-                int height = originalImage.getHeight();
-                int count = width * height;
-                int [] originalPixels = new int[count];
-                int [] filterPixels = new int[count];
-                int [] result = new int[count];
-                originalImage.getPixels(originalPixels,0,width,0,0,width,height);
-                cacheBitmap.getPixels(filterPixels,0,width,0,0,width,height);
+                resultMat.release();
+                frameMat.release();
+                hierarchy.release();
 
-                for (int i = 0; i < originalPixels.length; i++) {
-                    int originalPixel = originalPixels[i];
-                    if (Color.alpha(originalPixel)==0){
-                        result[i] = originalPixels[i];
-                        continue;
-                    }else {
-                        result[i] = filterPixels[i];
-                    }
-                }
-                Bitmap createBitmap = Bitmap.createBitmap(result,width,height, Bitmap.Config.ARGB_8888);
-
-                filterInfoResult.setFilterBitmap(createBitmap);
+                Bitmap resultBitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
+                Canvas canvas = new Canvas(resultBitmap);
+                canvas.drawBitmap(cacheBitmap,0,0,null);
+                if (!cacheBitmap.isRecycled())cacheBitmap.recycle();
+                filterInfoResult.setFilterBitmap(resultBitmap);
                 filterInfoResult.setType(FilterType.FACE_EPIDERMIS_SPOTS);//FaceEpidermisSpots
                 filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);
             }else{
@@ -102,5 +92,10 @@ public class FaceEpidermisSpots extends Filter{
             filterInfoResult.setStatus(FilterInfoResult.Status.FAILURE);
         }
         return filterInfoResult;
+    }
+
+    @Override
+    public FacePart[] getFacePart() {
+        return new FacePart[]{FacePart.FACE_FOREHEAD,FacePart.FACE_LEFT_RIGHT_AREA};
     }
 }

@@ -1,6 +1,7 @@
 package co.hoppen.filterlib.filter;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 
 import com.blankj.utilcode.util.LogUtils;
@@ -19,13 +20,14 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import co.hoppen.filterlib.FacePart;
 import co.hoppen.filterlib.FilterInfoResult;
 import co.hoppen.filterlib.FilterType;
 
 /**
  * Created by YangJianHui on 2022/3/8.
  */
-public class FaceFollicleCleanDegree extends Filter{
+public class FaceFollicleCleanDegree extends Filter implements FaceFilter{
 
    @Override
    public FilterInfoResult onFilter() {
@@ -33,7 +35,8 @@ public class FaceFollicleCleanDegree extends Filter{
       try {
          Bitmap originalImage = getOriginalImage();
          if (!isEmptyBitmap(originalImage)){
-            Bitmap createBitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
+            Bitmap createBitmap = getFacePartImage();
+                    //originalImage.copy(Bitmap.Config.ARGB_8888,true);
             Mat filterMat = new Mat();
             Utils.bitmapToMat(createBitmap,filterMat);
 
@@ -69,29 +72,20 @@ public class FaceFollicleCleanDegree extends Filter{
                   Imgproc.drawContours(oriMat,list,i,new Scalar(255,0,0,255));
                }
             }
+
             Utils.matToBitmap(oriMat,createBitmap);
+            filterMat.release();
+            oriMat.release();
+            blueMat.release();
+            structuringElement.release();
 
-            int width = originalImage.getWidth();
-            int height = originalImage.getHeight();
-            int count = width * height;
-            int [] originalPixels = new int[count];
-            int [] filterPixels = new int[count];
-            int [] result = new int[count];
-            originalImage.getPixels(originalPixels,0,width,0,0,width,height);
-            createBitmap.getPixels(filterPixels,0,width,0,0,width,height);
+            Bitmap resultBitmap = originalImage.copy(Bitmap.Config.ARGB_8888,true);
+            Canvas canvas = new Canvas(resultBitmap);
+            canvas.drawBitmap(createBitmap,0,0,null);
 
-            for (int i = 0; i < originalPixels.length; i++) {
-               int originalPixel = originalPixels[i];
-               if (Color.alpha(originalPixel)==0){
-                  result[i] = 0x00000000;
-                  continue;
-               }else {
-                  result[i] = filterPixels[i];
-               }
-            }
-            createBitmap = Bitmap.createBitmap(result,width,height, Bitmap.Config.ARGB_8888);
+            if (!createBitmap.isRecycled())createBitmap.recycle();
 
-            filterInfoResult.setFilterBitmap(createBitmap);
+            filterInfoResult.setFilterBitmap(resultBitmap);
             filterInfoResult.setType(FilterType.FACE_FOLLICLE_CLEAN_DEGREE);
             filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);
          }else{
@@ -104,4 +98,8 @@ public class FaceFollicleCleanDegree extends Filter{
       return filterInfoResult;
    }
 
+   @Override
+   public FacePart[] getFacePart() {
+      return new FacePart[]{FacePart.FACE_MIDDLE};
+   }
 }

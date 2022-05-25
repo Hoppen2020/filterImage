@@ -21,6 +21,7 @@ import java.lang.reflect.GenericArrayType;
 import java.util.ArrayList;
 import java.util.List;
 
+import co.hoppen.filterlib.FacePart;
 import co.hoppen.filterlib.FilterInfoResult;
 import co.hoppen.filterlib.FilterType;
 
@@ -28,7 +29,7 @@ import co.hoppen.filterlib.FilterType;
  * 浅层斑 uv
  * Created by YangJianHui on 2022/3/12.
  */
-public class FaceSuperficialPlaque extends Filter{
+public class FaceSuperficialPlaque extends Filter implements FaceFilter{
 
    @Override
    public FilterInfoResult onFilter() {
@@ -85,4 +86,8 @@ public class FaceSuperficialPlaque extends Filter{
       return filterInfoResult;
    }
 
+   @Override
+   public FacePart[] getFacePart() {
+      return new FacePart[]{FacePart.FACE_SKIN};
+   }
 }

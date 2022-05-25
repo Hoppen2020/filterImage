@@ -2,33 +2,29 @@ package co.hoppen.filterlib.filter;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.widget.Toast;
 
 import androidx.core.graphics.ColorUtils;
 
-import com.blankj.utilcode.util.LogUtils;
+import com.huawei.hms.mlsdk.face.MLFace;
+import com.huawei.hms.mlsdk.face.MLFaceAnalyzer;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import co.hoppen.filterlib.FacePart;
 import co.hoppen.filterlib.FilterInfoResult;
 import co.hoppen.filterlib.FilterType;
-
-import static org.opencv.imgproc.Imgproc.MORPH_CROSS;
-import static org.opencv.imgproc.Imgproc.MORPH_OPEN;
-import static org.opencv.imgproc.Imgproc.MORPH_RECT;
+import co.hoppen.filterlib.utils.CutoutUtils;
 
 /**
  * Created by YangJianHui on 2021/9/10.
  */
-public class FaceOilSecretion extends Filter {
-
+public class FaceOilSecretion extends Filter implements FaceFilter {
 
     @Override
     public FilterInfoResult onFilter() {
@@ -37,12 +33,10 @@ public class FaceOilSecretion extends Filter {
             Bitmap originalImage = getOriginalImage();
             if (!isEmptyBitmap(originalImage)){
 
-                Bitmap bitmap = getFaceSkin();
-
+                Bitmap bitmap = getFacePartImage().copy(Bitmap.Config.ARGB_8888,true);
                 Mat yuvMat = new Mat();
                 Utils.bitmapToMat(bitmap,yuvMat);
                 Imgproc.cvtColor(yuvMat,yuvMat,Imgproc.COLOR_RGB2GRAY);
-
                 Mat detect = new Mat();
                 List<Mat> channels = new ArrayList<>();
                 Core.split(yuvMat,channels);
@@ -50,6 +44,10 @@ public class FaceOilSecretion extends Filter {
                 Imgproc.threshold(outputMark,outputMark,0,255, Imgproc.THRESH_BINARY|Imgproc.THRESH_OTSU);
                 yuvMat.copyTo(detect,outputMark);
                 Utils.matToBitmap(detect,bitmap);
+
+                yuvMat.release();
+                detect.release();
+                outputMark.release();
 
                 int width = originalImage.getWidth();
                 int height = originalImage.getHeight();
@@ -103,7 +101,7 @@ public class FaceOilSecretion extends Filter {
                         }
                     }
                 }
-
+                if (!bitmap.isRecycled())bitmap.recycle();
                 filterInfoResult.setFilterBitmap(Bitmap.createBitmap(dst,width,height, Bitmap.Config.ARGB_8888));
                 filterInfoResult.setType(FilterType.FACE_OIL_SECRETION);
                 filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);
@@ -113,77 +111,10 @@ public class FaceOilSecretion extends Filter {
         }
         return filterInfoResult;
     }
-}
 
-//{
-//        int width = originalImage.getWidth();
-//        int height = originalImage.getHeight();
-//        int count = width * height;
-//
-//        int [] originalPixels = new int[count];
-//        int [] filterPixels = new int[count];
-//
-//        originalImage.getPixels(originalPixels,0,width,0,0,width,height);
-//        int totalGray = 0;
-//        for (int i = 0; i <originalPixels.length ; i++) {
-//        int originalPixel = originalPixels[i];
-//        int R = Color.red(originalPixel);
-//        int G = Color.green(originalPixel);
-//        int B = Color.blue(originalPixel);
-//        int gray = (int) (R * 0.3 + G * 0.59 + B * 0.11);
-//        totalGray+=gray;
-//        filterPixels[i] = gray;
-//        }
-//        int avgGray = totalGray / count;
-//        double totalCountPixels = 0;
-//        double totalWaterPixels = 0;
-//        double totalPercentPixels = 0;
-//        double hash = 0;
-//        for (int i = 0; i <originalPixels.length ; i++) {
-//        int gray = filterPixels[i];
-//        filterPixels[i] = originalPixels[i];
-//        if (gray >= avgGray * 1.1 && gray <= 250) {
-//        totalCountPixels++;
-//        }
-//        if (gray >= avgGray * 1.1 && gray > 250) {
-//        totalWaterPixels++;
-//        }
-//
-//        if (gray <avgGray * 1.2){
-//
-//        }else if (gray>90&&gray<=110){
-//
-//        }else if (gray>155){
-//        totalPercentPixels++;
-//        filterPixels[i]=Color.rgb(255, 255, 0);
-//        }
-//        }
-//        totalCountPixels = totalWaterPixels * 60 + totalCountPixels * 2;
-//        hash = totalCountPixels / count;
-//        LogUtils.e(totalCountPixels,hash, totalPercentPixels,totalPercentPixels / count);
-//        int score = 0;
-//        score = (int) ((30)+ ((1-hash)*0.9) * 40);
-//        LogUtils.e(score);
-//
-//        if (score<=50&&score>55){
-//        score = (score-40) * 21 / 10 +40;
-//        }else if (score<=55){
-//        score = (score-40) * 3 +25;
-//        }
-//        if (score > 80) {
-//        score = 78;
-//        }
-//        if (score<35){
-//        score =35;
-//        }
-//
-//        Bitmap bitmap = Bitmap.createBitmap(width, height,Bitmap.Config.ARGB_8888);
-//        bitmap.setPixels(filterPixels,0,width, 0, 0, width, height);
-//        filterInfoResult.setResistance(getResistance());
-//        filterInfoResult.setScore(score);
-//        filterInfoResult.setRatio((totalPercentPixels * 100 / count));
-//        filterInfoResult.setDepth(0);
-//        filterInfoResult.setFilterBitmap(bitmap);
-//        filterInfoResult.setType(FilterType.SKIN_OIL_SECRETION);
-//        filterInfoResult.setStatus(FilterInfoResult.Status.SUCCESS);
-//        }
+    @Override
+    public FacePart[] getFacePart() {
+        return new FacePart[]{FacePart.FACE_T,FacePart.FACE_LEFT_RIGHT_AREA};
+    }
+
+}
