@@ -62,6 +62,15 @@ android {
     }
 }
 
+publishing {
+    publications {
+        create("maven_public", MavenPublication::class) {
+            groupId = "com.opencv.sdk"
+            artifactId = "sdk452"
+            version = "1.0.0"
+        }
+    }
+}
 
 
 
