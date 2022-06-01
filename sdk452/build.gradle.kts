@@ -1,5 +1,6 @@
 plugins {
     id("com.android.library")
+    id("maven-publish")
 }
 
 val openCVersionName = "4.5.2"
@@ -8,11 +9,11 @@ val openCVersionCode = ((4 * 100 + 5) * 100 + 2) * 10 + 0
 println("OpenCV: " + openCVersionName + " " + project.buildscript.sourceFile)
 
 android {
-    compileSdk = 26
+    compileSdk = 30
 
     defaultConfig {
         minSdk = 21
-        targetSdk = 26
+        targetSdk = 30
 
 //        versionCode(openCVersionCode)
 //        versionName(openCVersionName)
@@ -40,8 +41,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_6
-        targetCompatibility = JavaVersion.VERSION_1_6
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     sourceSets {
@@ -61,5 +62,6 @@ android {
     }
 }
 
-dependencies {
-}
+
+
+
